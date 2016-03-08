@@ -417,7 +417,7 @@ function closePlayer () {
   update()
 
   if (state.isFullScreen) {
-    ipcRenderer.send('toggleFullScreen')
+    dispatch('toggleFullScreen')
   }
   restoreBounds()
   closeServer()

@@ -52,9 +52,10 @@ function onWindowHide () {
   getMenuItem('Float on Top').enabled = false
 }
 
-function onToggleFullScreen () {
-  getMenuItem('Full Screen').checked = windows.main.isFullScreen()
-  windows.main.send('fullscreenChanged', windows.main.isFullScreen())
+function onToggleFullScreen (flag) {
+  flag = flag || windows.main.isFullScreen()
+  getMenuItem('Full Screen').checked = flag
+  windows.main.send('fullscreenChanged', flag)
 }
 
 function getMenuItem (label) {
