@@ -42,8 +42,8 @@ function createMainWindow (menu) {
   win.on('blur', menu.onWindowHide)
   win.on('focus', menu.onWindowShow)
 
-  win.on('enter-full-screen', () => menu.onToggleFullScreen(true))
-  win.on('leave-full-screen', () => menu.onToggleFullScreen(false))
+  win.on('enter-full-screen', () => process.nextTick(() => menu.onToggleFullScreen(true)))
+  win.on('leave-full-screen', () => process.nextTick(() => menu.onToggleFullScreen(false)))
 
   win.on('close', function (e) {
     if (process.platform === 'darwin' && !isQuitting) {

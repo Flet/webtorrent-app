@@ -9,6 +9,7 @@ function toggleFullScreen () {
   debug('toggleFullScreen')
   if (windows.main && windows.main.isVisible()) {
     windows.main.setFullScreen(!windows.main.isFullScreen())
+    onToggleFullScreen()
   }
 }
 
