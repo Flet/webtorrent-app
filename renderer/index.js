@@ -1,6 +1,6 @@
 /* global URL, Blob */
-
 console.time('init')
+
 var airplay = require('airplay-js')
 var cfg = require('application-config')('WebTorrent')
 var chromecasts = require('chromecasts')()
@@ -10,6 +10,7 @@ var dragDrop = require('drag-drop')
 var electron = require('electron')
 var EventEmitter = require('events')
 var extend = require('xtend')
+var ipcRenderer = electron.ipcRenderer
 var mainLoop = require('main-loop')
 var networkAddress = require('network-address')
 var os = require('os')
@@ -94,7 +95,7 @@ function init () {
 
   // ...same thing if you paste a torrent
   document.addEventListener('paste', function () {
-    electron.ipcRenderer.send('addTorrentFromPaste')
+    ipcRenderer.send('addTorrentFromPaste')
   })
 
   // ...keyboard shortcuts
@@ -113,7 +114,7 @@ function init () {
   // ...focus and blur. Needed to show correct dock icon text ("badge") in OSX
   window.addEventListener('focus', function () {
     state.isFocused = true
-    if (state.dock.badge > 0) electron.ipcRenderer.send('setBadge', '')
+    if (state.dock.badge > 0) ipcRenderer.send('setBadge', '')
     state.dock.badge = 0
   })
 
@@ -178,7 +179,7 @@ function dispatch (action, ...args) {
     update()
   }
   if (action === 'toggleFullScreen') {
-    electron.ipcRenderer.send('toggleFullScreen')
+    ipcRenderer.send('toggleFullScreen')
     update()
   }
   if (action === 'videoMouseMoved') {
@@ -188,20 +189,20 @@ function dispatch (action, ...args) {
 }
 
 function setupIpc () {
-  electron.ipcRenderer.on('addTorrent', function (e, torrentId) {
+  ipcRenderer.on('addTorrent', function (e, torrentId) {
     dispatch('addTorrent', torrentId)
   })
 
-  electron.ipcRenderer.on('seed', function (e, files) {
+  ipcRenderer.on('seed', function (e, files) {
     dispatch('seed', files)
   })
 
-  electron.ipcRenderer.on('fullscreenChanged', function (e, isFullScreen) {
+  ipcRenderer.on('fullscreenChanged', function (e, isFullScreen) {
     state.isFullScreen = isFullScreen
     update()
   })
 
-  electron.ipcRenderer.on('addFakeDevice', function (e, device) {
+  ipcRenderer.on('addFakeDevice', function (e, device) {
     var player = new EventEmitter()
     player.play = (networkURL) => console.log(networkURL)
     state.devices[device] = player
@@ -223,7 +224,7 @@ function detectDevices () {
 function loadState (callback) {
   cfg.read(function (err, data) {
     if (err) console.error(err)
-    electron.ipcRenderer.send('log', 'loaded state from ' + cfg.filePath)
+    ipcRenderer.send('log', 'loaded state from ' + cfg.filePath)
 
     // populate defaults if they're not there
     state.saved = extend(defaultSaved, data)
@@ -238,7 +239,7 @@ function resumeAllTorrents () {
 
 // Write state.saved to the JSON state file
 function saveState () {
-  electron.ipcRenderer.send('log', 'saving state to ' + cfg.filePath)
+  ipcRenderer.send('log', 'saving state to ' + cfg.filePath)
   cfg.write(state.saved, function (err) {
     if (err) console.error(err)
     update()
@@ -256,7 +257,7 @@ function updateDockIcon () {
   }
   if (progress !== state.dock.progress) {
     state.dock.progress = progress
-    electron.ipcRenderer.send('setProgress', progress)
+    ipcRenderer.send('setProgress', progress)
   }
 }
 
@@ -357,7 +358,7 @@ function addTorrentEvents (torrent) {
   function torrentDone () {
     if (!state.isFocused) {
       state.dock.badge += 1
-      electron.ipcRenderer.send('setBadge', state.dock.badge)
+      ipcRenderer.send('setBadge', state.dock.badge)
     }
     update()
   }
@@ -402,7 +403,7 @@ function closePlayer () {
   state.url = '/'
   state.title = config.APP_NAME
   if (state.isFullScreen) {
-    electron.ipcRenderer.send('toggleFullScreen')
+    ipcRenderer.send('toggleFullScreen')
   }
   restoreBounds()
   closeServer()
@@ -461,14 +462,14 @@ function setDimensions (dimensions) {
   var x = Math.floor((screenWidth - width) / 2)
   var y = Math.floor((screenHeight - height) / 2)
 
-  electron.ipcRenderer.send('setAspectRatio', aspectRatio)
-  electron.ipcRenderer.send('setBounds', {x, y, width, height})
+  ipcRenderer.send('setAspectRatio', aspectRatio)
+  ipcRenderer.send('setBounds', {x, y, width, height})
 }
 
 function restoreBounds () {
-  electron.ipcRenderer.send('setAspectRatio', 0)
+  ipcRenderer.send('setAspectRatio', 0)
   if (state.mainWindowBounds) {
-    electron.ipcRenderer.send('setBounds', state.mainWindowBounds, true)
+    ipcRenderer.send('setBounds', state.mainWindowBounds, true)
   }
 }
 
