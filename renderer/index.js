@@ -10,7 +10,6 @@ var dragDrop = require('drag-drop')
 var electron = require('electron')
 var EventEmitter = require('events')
 var extend = require('xtend')
-var ipcRenderer = electron.ipcRenderer
 var mainLoop = require('main-loop')
 var networkAddress = require('network-address')
 var os = require('os')
@@ -18,11 +17,12 @@ var path = require('path')
 var torrentPoster = require('./lib/torrent-poster')
 var WebTorrent = require('webtorrent')
 
+var App = require('./views/app')
 var createElement = require('virtual-dom/create-element')
 var diff = require('virtual-dom/diff')
 var patch = require('virtual-dom/patch')
 
-var App = require('./views/app')
+var ipcRenderer = electron.ipcRenderer
 
 var HOME = os.homedir()
 
